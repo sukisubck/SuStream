@@ -290,3 +290,17 @@
     <string name="notif_provider_problem_title">%1$s reported a problem</string>
     <string name="notif_new_available_title">%1$s is now available</string>
 </resources>
+
+    <!-- Addons (nav + screen) -->
+<string name="nav_addons">Addons</string>
+<string name="addons_none_configured">No addons</string>
+<string name="addons_add_button">Add addon</string>
+<string name="addons_add_title">Add addon</string>
+<string name="addons_test_button">Test</string>
+<string name="addons_remove">Remove</string>
+<string name="addons_empty_title">No addons yet</string>
+<string name="addons_empty_body">Add an addon URL to enable additional sources.</string>
+
+    <!-- Common actions (may already exist — only add if missing) -->
+<string name="action_cancel">Cancel</string>
+<string name="action_save">Save</string>
