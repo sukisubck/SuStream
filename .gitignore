@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------
+# Secrets — never commit these.
+#
+# local.properties holds the SDK path and, during development, real TMDB and
+# provider credentials. See docs/SECURITY.md and .env.example (placeholders only).
+# ---------------------------------------------------------------------------
+local.properties
+.env
+*.keystore
+*.jks
+*.p12
+secrets.properties
+
+# ---------------------------------------------------------------------------
+# Build output
+# ---------------------------------------------------------------------------
+/build
+app/build/
+*/build/
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+
+# ---------------------------------------------------------------------------
+# Gradle
+#
+# .gradle-user/ and .android-user/ are project-local GRADLE_USER_HOME and
+# ANDROID_SDK_HOME directories. They hold the dependency cache and transformed
+# artefacts — hundreds of megabytes, machine-specific, and regenerated on demand.
+# Committing them once inflated the object store to 400 MB.
+# ---------------------------------------------------------------------------
+.gradle/
+.gradle-user/
+.android-user/
+.kotlin/
+local.gradle
+
+# ---------------------------------------------------------------------------
+# IDE
+#
+# Android Studio writes both shared project config and per-developer state into
+# .idea/. Only the machine-specific parts are excluded.
+# ---------------------------------------------------------------------------
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetSelector.xml
+.idea/deploymentTargetDropDown.xml
+.idea/misc.xml
+.idea/shelf/
+.idea/androidTestResultsUserPreferences.xml
+
+# ---------------------------------------------------------------------------
+# OS and editor noise
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+*~
+*.swp

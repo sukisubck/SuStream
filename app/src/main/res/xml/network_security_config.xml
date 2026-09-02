@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cleartext policy.
+
+  The platform-level flag has to be permissive because IPTV endpoints are supplied by the *user* at
+  runtime and cannot be enumerated at build time. A large share of real IPTV/Xtream providers are
+  still plain HTTP on a non-standard port (the supplied prototype's own example is
+  http://iptv-pro.stream:8080), so setting cleartextTrafficPermitted="false" here would break the
+  IPTV module entirely rather than making it safer.
+
+  Policy is therefore enforced in application code instead, where it can distinguish between
+  traffic classes. See core/net/UrlValidator.kt:
+    * TMDB, the backend and the provider API   -> HTTPS only, always, in every build type.
+    * User-supplied IPTV playlist / EPG / stream URLs -> HTTPS preferred; HTTP permitted only after
+      an explicit, per-playlist user acknowledgement which is recorded with the playlist.
+    * file://, content://, data://, javascript:, and other schemes -> always rejected.
+  See docs/SECURITY.md section 3.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+      Debug builds additionally trust user-installed CAs so that traffic can be inspected with a
+      proxy during development. This block is NOT present in release builds.
+    -->
+    <debug-overrides cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

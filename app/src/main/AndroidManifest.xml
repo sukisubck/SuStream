@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Keeps the screen on and the CPU awake during playback only. -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- Post-notification consent for service/new-content alerts (API 33+). -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!--
+      TV devices have no touchscreen and Fire TV has no camera/telephony. Declaring these as
+      not-required is what makes the app installable on Fire TV and eligible for the TV section
+      of the Play Store / Amazon Appstore.
+    -->
+    <uses-feature
+        android:name="android.hardware.touchscreen"
+        android:required="false" />
+    <uses-feature
+        android:name="android.software.leanback"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.location.gps"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.wifi"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.gamepad"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.screen.portrait"
+        android:required="false" />
+
+    <application
+        android:name=".SuStreamApplication"
+        android:allowBackup="false"
+        android:banner="@drawable/tv_banner"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:isGame="false"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.SuStream"
+        tools:targetApi="33">
+
+        <!--
+          Single-activity architecture. Landscape-only: TV panels are 16:9 and a rotated TV UI is
+          never correct. configChanges keeps the Compose tree alive across the transitions a TV
+          actually produces (HDMI resolution/HDR mode switches, locale, night mode, keyboard dock)
+          instead of recreating the activity mid-playback.
+        -->
+        <activity
+            android:name=".MainActivity"
+            android:configChanges="keyboard|keyboardHidden|navigation|orientation|screenLayout|screenSize|smallestScreenSize|uiMode|density|fontScale|locale|layoutDirection|colorMode"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:resizeableActivity="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.SuStream.Splash"
+            tools:ignore="DiscouragedApi,LockedOrientationActivity">
+
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <!-- LEANBACK_LAUNCHER puts the app on the Fire TV / Android TV home row. -->
+                <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <!-- LAUNCHER keeps it installable and launchable on non-TV form factors too. -->
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          Coil sets up its own content provider for initialisation; we supply the ImageLoader from
+          SuStreamApplication instead, so the automatic initialiser is removed to avoid a second
+          OkHttp client and an unnecessary startup cost.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge" />
+    </application>
+
+</manifest>

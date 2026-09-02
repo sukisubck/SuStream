@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Only the handful of colours the *platform* needs before Compose takes over. The real design
+  tokens live in Kotlin (designsystem/theme/Colour.kt) so they are type-checked and previewable.
+-->
+<resources>
+    <color name="window_background">#FF0B0E14</color>
+    <color name="brand">#FF6C5CE7</color>
+    <color name="brand_light">#FFA29BFE</color>
+</resources>

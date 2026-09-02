@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--
+      The app is Compose-only, so the XML theme exists purely to give the window the right
+      background and system-bar treatment before the first frame is composed. It is a dark theme
+      unconditionally: a 10-foot living-room UI is always dark, and a light TV theme causes
+      eye strain and washes out poster art.
+    -->
+    <style name="Theme.SuStream" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="android:colorBackground">@color/window_background</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentTransitions">false</item>
+        <!-- TV has no status/navigation bar to tint, but Fire tablets and phones do. -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
+
+    <!--
+      Applied to MainActivity so the launch window paints the brand background instead of a white
+      flash. Compose swaps in the real theme on first composition.
+    -->
+    <style name="Theme.SuStream.Splash" parent="Theme.SuStream">
+        <item name="android:windowBackground">@drawable/splash_background</item>
+    </style>
+
+</resources>

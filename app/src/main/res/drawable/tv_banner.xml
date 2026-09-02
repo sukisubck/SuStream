@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TV launcher banner. Android TV / Fire TV require a 320x180 (xhdpi) banner for the home row.
+  Vector so it stays crisp at every density. Brand gradient and bolt mark match the prototype's
+  header treatment (#6C5CE7 -> #A29BFE with a white "zap" glyph).
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+
+    <path android:pathData="M0,0h320v180H0z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:startX="0"
+                android:startY="180"
+                android:endX="320"
+                android:endY="0"
+                android:type="linear">
+                <item android:offset="0" android:color="#FF0B0E14" />
+                <item android:offset="0.55" android:color="#FF1A1740" />
+                <item android:offset="1" android:color="#FF6C5CE7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Rounded brand tile -->
+    <path
+        android:pathData="M32,58 h56 a16,16 0 0 1 16,16 v32 a16,16 0 0 1 -16,16 h-56 a16,16 0 0 1 -16,-16 v-32 a16,16 0 0 1 16,-16 z">
+        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+            <gradient
+                android:startX="16"
+                android:startY="122"
+                android:endX="104"
+                android:endY="58"
+                android:type="linear">
+                <item android:offset="0" android:color="#FF6C5CE7" />
+                <item android:offset="1" android:color="#FFA29BFE" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Lightning bolt glyph, centred in the tile -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M66,68 L44,96 h12 l-4,20 22,-28 h-12 z" />
+
+    <!-- Wordmark bar suggestion: three graded bars evoking the rail layout -->
+    <path android:fillColor="#FFF1F5F9" android:pathData="M128,72 h150 v10 h-150 z" />
+    <path android:fillColor="#B3A29BFE" android:pathData="M128,92 h104 v8 h-104 z" />
+    <path android:fillColor="#66CBD5E1" android:pathData="M128,110 h62 v6 h-62 z" />
+</vector>
