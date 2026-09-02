@@ -52,11 +52,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Release the player's surface and buffers. The container itself outlives the activity, and
-        // its lazy dependencies are rebuilt on demand if the activity returns.
-        if (isFinishing) {
-            (application as SuStreamApplication).container.playerManager.release()
-        }
+        // Player lifecycle is now managed inside PlayerScreen / the Compose lifecycle.
+        // No playerManager reference needed here — TorBox player has been removed.
     }
 }
 

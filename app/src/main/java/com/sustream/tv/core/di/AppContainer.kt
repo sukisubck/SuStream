@@ -1,7 +1,8 @@
 package com.sustream.tv.core.di
 
 import android.content.Context
-import com.sustream.tv.BuildConfig
+import com.sustream.tv.core.config.AppConfig
+import com.sustream.tv.core.config.BuildConfigAppConfig
 import com.sustream.tv.data.local.AddonRepositoryImpl
 import com.sustream.tv.data.local.AppDatabase
 import com.sustream.tv.data.local.IptvPlaylistRepositoryImpl
@@ -80,11 +81,7 @@ class AppContainer(private val applicationContext: Context) {
     }
 
     val config: AppConfig by lazy {
-        AppConfig(
-            tmdbApiKey = BuildConfig.TMDB_API_KEY,
-            tmdbBaseUrl = BuildConfig.TMDB_BASE_URL,
-            backendBaseUrl = BuildConfig.BACKEND_BASE_URL,
-        )
+        BuildConfigAppConfig()
     }
 
     // ---- Persistence --------------------------------------------------------
