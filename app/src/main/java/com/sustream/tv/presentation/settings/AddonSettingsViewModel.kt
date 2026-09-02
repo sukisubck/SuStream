@@ -6,8 +6,8 @@ import com.sustream.tv.core.result.AppError
 import com.sustream.tv.core.result.AppResult
 import com.sustream.tv.domain.model.StremioAddonPreferences
 import com.sustream.tv.domain.repository.SettingsRepository
-import com.sustream.tv.provider.stremio.AddonDescriptor
-import com.sustream.tv.provider.stremio.AddonManifestProbe
+import com.sustream.tv.provider.htmljson.AddonDescriptor
+import com.sustream.tv.provider.htmljson.AddonManifestProbe
 import com.sustream.tv.presentation.common.Loadable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -54,7 +54,6 @@ android {
         // ---- Configuration, not secrets -------------------------------------
         buildConfigField("String", "TMDB_BASE_URL", "\"https://api.themoviedb.org/3/\"")
         buildConfigField("String", "TMDB_IMAGE_FALLBACK_BASE_URL", "\"https://image.tmdb.org/t/p/\"")
-        buildConfigField("String", "TORBOX_BASE_URL", "\"https://api.torbox.app/v1/api/\"")
         buildConfigField(
             "String",
             "BACKEND_BASE_URL",
@@ -70,7 +69,6 @@ android {
             "\"${devConfig("TMDB_READ_ACCESS_TOKEN")}\"",
         )
         buildConfigField("String", "DEV_TMDB_API_KEY", "\"${devConfig("TMDB_API_KEY")}\"")
-        buildConfigField("String", "DEV_TORBOX_API_KEY", "\"${devConfig("TORBOX_API_KEY")}\"")
     }
 
     buildTypes {

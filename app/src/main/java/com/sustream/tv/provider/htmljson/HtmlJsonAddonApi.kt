@@ -1,4 +1,4 @@
-package com.sustream.tv.provider.stremio
+package com.sustream.tv.provider.htmljson
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -6,19 +6,19 @@ import kotlinx.serialization.json.JsonElement
 import retrofit2.http.GET
 import retrofit2.http.Path
 
-internal interface StremioAddonApi {
+internal interface HtmlJsonAddonApi {
     @GET("manifest.json")
-    suspend fun manifest(): StremioManifestDto
+    suspend fun manifest(): HtmlJsonManifestDto
 
     @GET("stream/{type}/{id}.json")
     suspend fun streams(
         @Path("type") type: String,
         @Path("id") id: String,
-    ): StremioStreamsDto
+    ): HtmlJsonStreamsDto
 }
 
 @Serializable
-internal data class StremioManifestDto(
+internal data class HtmlJsonManifestDto(
     val id: String,
     val name: String,
     val resources: List<JsonElement> = emptyList(),
@@ -27,20 +27,20 @@ internal data class StremioManifestDto(
 )
 
 @Serializable
-internal data class StremioStreamsDto(
-    val streams: List<StremioStreamDto> = emptyList(),
+internal data class HtmlJsonStreamsDto(
+    val streams: List<HtmlJsonStreamDto> = emptyList(),
 )
 
 @Serializable
-internal data class StremioStreamDto(
+internal data class HtmlJsonStreamDto(
     val url: String? = null,
     val name: String? = null,
     val title: String? = null,
-    @SerialName("behaviorHints") val behaviorHints: StremioStreamHintsDto? = null,
+    @SerialName("behaviorHints") val behaviorHints: HtmlJsonStreamHintsDto? = null,
 )
 
 @Serializable
-internal data class StremioStreamHintsDto(
+internal data class HtmlJsonStreamHintsDto(
     val filename: String? = null,
     @SerialName("notWebReady") val notWebReady: Boolean = false,
 )

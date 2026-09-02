@@ -18,7 +18,6 @@ import com.sustream.tv.core.log.Secret
 interface AppConfig {
     val tmdbBaseUrl: String
     val tmdbImageFallbackBaseUrl: String
-    val torboxBaseUrl: String
     val backendBaseUrl: String
 
     /** TMDB v4 read token, for debug builds talking to TMDB directly. */
@@ -31,7 +30,6 @@ interface AppConfig {
      * Provider key for the debug-only direct mode. Empty in release: the backend holds the key and
      * the client calls the backend's `providers/torbox` endpoints instead.
      */
-    val torboxApiKeyForDirectMode: Secret
 
     /** True when the client may call TMDB directly rather than through the backend. */
     val allowDirectTmdb: Boolean
@@ -108,14 +106,8 @@ class BuildConfigAppConfig(
     override val tmdbApiKey: Secret =
         if (isDebugBuild) Secret(BuildConfig.DEV_TMDB_API_KEY) else Secret.EMPTY
 
-    override val torboxApiKeyForDirectMode: Secret =
-        if (isDebugBuild) Secret(BuildConfig.DEV_TORBOX_API_KEY) else Secret.EMPTY
-
     override val allowDirectTmdb: Boolean =
         isDebugBuild && (!tmdbReadToken.isBlank || !tmdbApiKey.isBlank)
-
-    override val allowDirectProvider: Boolean =
-        isDebugBuild && !torboxApiKeyForDirectMode.isBlank
 
     override val hasRealBackend: Boolean =
         backendBaseUrl.isNotBlank() && PLACEHOLDER_BACKEND_HOSTS.none { backendBaseUrl.contains(it) }
