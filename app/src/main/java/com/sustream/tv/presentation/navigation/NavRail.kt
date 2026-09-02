@@ -236,7 +236,7 @@ private fun RailStatus(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        // IPTV line (unchanged)
+        // IPTV line
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimens.space2),
