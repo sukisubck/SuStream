@@ -17,26 +17,12 @@ import com.sustream.tv.domain.model.EpisodeRef
 import com.sustream.tv.domain.model.MediaId
 import com.sustream.tv.domain.model.MediaType
 import com.sustream.tv.domain.model.PlaybackRequest
+import com.sustream.tv.presentation.addons.AddonsScreen
 import com.sustream.tv.presentation.details.DetailsScreen
 import com.sustream.tv.presentation.home.HomeScreen
 import com.sustream.tv.presentation.live.LiveTvScreen
 import com.sustream.tv.presentation.player.PlayerScreen
 
-/**
- * The navigation graph.
- *
- * ## Rail visibility
- *
- * Details and the player are full-screen: the rail is hidden on both. On Details it would compete
- * with the backdrop for the left edge, and over video it would be an obstruction. Every other
- * destination is a section and keeps the rail.
- *
- * ## Section switching
- *
- * Moving between rail sections pops back to Home rather than stacking, with `launchSingleTop`. Without
- * that, pressing Home → Films → Live → Search → BACK four times would walk the user backwards through
- * their own navigation, which is not what BACK means on a television.
- */
 @Composable
 fun SuStreamNavGraph(
     navController: NavHostController,
@@ -83,7 +69,6 @@ fun SuStreamNavGraph(
                     val mediaId = MediaId.parseOrNull(Routes.decode(raw))
 
                     if (mediaId == null) {
-                        // A malformed id is a bug or a bad deep link, not something to crash on.
                         ComingSoonScreen(
                             title = "Title unavailable",
                             description = "That link does not refer to a title this app can open.",
@@ -95,7 +80,6 @@ fun SuStreamNavGraph(
                     DetailsScreen(
                         mediaId = mediaId,
                         onPlayMovie = { id, source ->
-                            // Hand the chosen source over out of band; a route cannot carry it.
                             container.playbackHandoff.offer(source)
                             navController.navigate(Routes.playerForMovie(id))
                         },
@@ -106,8 +90,9 @@ fun SuStreamNavGraph(
                             )
                         },
                         onAddPlaylist = { navController.navigateToSection(Routes.LIVE) },
+                        // Was onOpenProviderSettings — now navigates to the Addons rail destination.
                         onOpenProviderSettings = {
-                            navController.navigateToSection(Routes.SETTINGS)
+                            navController.navigateToSection(Routes.ADDONS)
                         },
                     )
                 }
@@ -131,7 +116,7 @@ fun SuStreamNavGraph(
                     val target = Routes.decode(
                         entry.arguments?.getString(Routes.ARG_TARGET_ID).orEmpty(),
                     )
-                    val season = entry.arguments?.getInt(Routes.ARG_SEASON) ?: -1
+                    val season  = entry.arguments?.getInt(Routes.ARG_SEASON)  ?: -1
                     val episode = entry.arguments?.getInt(Routes.ARG_EPISODE) ?: -1
 
                     val request = buildPlaybackRequest(kind, target, season, episode)
@@ -146,11 +131,8 @@ fun SuStreamNavGraph(
 
                     PlayerScreen(
                         request = request,
-                        // Consumed once: reaching the player any other way runs its own discovery.
                         onExit = { navController.popBackStack() },
                         onPlayEpisode = { next: EpisodeRef ->
-                            // Replace rather than stack, so BACK from episode 4 does not walk back
-                            // through episodes 3, 2 and 1.
                             navController.navigate(
                                 Routes.playerForEpisode(
                                     next.showId,
@@ -164,14 +146,47 @@ fun SuStreamNavGraph(
                     )
                 }
 
-                // ---- Sections not yet built -------------------------------------
-                // Each is replaced by its real screen as it lands; see docs/HANDOVER.md.
+                // ---- Addons (top-level rail destination) --------------------
+
+                composable(Routes.ADDONS) {
+                    AddonsScreen(
+                        onAddAddon = { navController.navigate(Routes.ADDONS_ADD) },
+                        onOpenAddon = { addonId ->
+                            navController.navigate(Routes.addonDetail(addonId))
+                        },
+                    )
+                }
+
+                composable(Routes.ADDONS_ADD) {
+                    ComingSoonScreen(
+                        title = "Add addon",
+                        description = "Enter an addon URL to verify and save it.",
+                        onBack = { navController.popBackStack() },
+                    )
+                }
+
+                composable(
+                    route = Routes.ADDONS_DETAIL,
+                    arguments = listOf(
+                        navArgument(Routes.ARG_ADDON_ID) { type = NavType.StringType },
+                    ),
+                ) { entry ->
+                    val addonId = Routes.decode(
+                        entry.arguments?.getString(Routes.ARG_ADDON_ID).orEmpty(),
+                    )
+                    ComingSoonScreen(
+                        title = "Addon detail",
+                        description = "Health, types, and removal for $addonId.",
+                        onBack = { navController.popBackStack() },
+                    )
+                }
+
+                // ---- Sections not yet built ---------------------------------
 
                 composable(Routes.FILMS) {
                     ComingSoonScreen(
                         title = "Films",
-                        description = "A paged grid of films with genre and year filters, backed by " +
-                            "TMDB discover.",
+                        description = "A paged grid of films with genre and year filters, backed by TMDB discover.",
                         onBack = { navController.navigateToSection(Routes.HOME) },
                     )
                 }
@@ -211,8 +226,7 @@ fun SuStreamNavGraph(
                 composable(Routes.SETTINGS) {
                     ComingSoonScreen(
                         title = "Settings",
-                        description = "Account, playback, subtitles, providers, Live TV playlists, " +
-                            "diagnostics, and attribution.",
+                        description = "Account, playback, subtitles, Live TV playlists, diagnostics, and attribution.",
                         onBack = { navController.navigateToSection(Routes.HOME) },
                     )
                 }
@@ -221,13 +235,6 @@ fun SuStreamNavGraph(
     }
 }
 
-/**
- * Rebuilds a [PlaybackRequest] from route arguments.
- *
- * Titles are deliberately left blank: a route carries ids, not display text, and stuffing a title
- * into a URL would both bloat the back stack and go stale. `PlayerViewModel` adopts the real title
- * from the catalogue snapshot as soon as it loads.
- */
 private fun buildPlaybackRequest(
     kind: String,
     targetId: String,
@@ -240,15 +247,12 @@ private fun buildPlaybackRequest(
 
     Routes.KIND_EPISODE -> {
         val showId = MediaId.parseOrNull(targetId)?.takeIf { it.type == MediaType.TV }
-        if (showId == null || season < 0 || episode < 0) {
-            null
-        } else {
-            PlaybackRequest.TvEpisode(
-                ref = EpisodeRef(showId, season, episode),
-                showTitle = "",
-                episodeTitle = "",
-            )
-        }
+        if (showId == null || season < 0 || episode < 0) null
+        else PlaybackRequest.TvEpisode(
+            ref = EpisodeRef(showId, season, episode),
+            showTitle = "",
+            episodeTitle = "",
+        )
     }
 
     Routes.KIND_CHANNEL -> targetId
@@ -258,13 +262,6 @@ private fun buildPlaybackRequest(
     else -> null
 }
 
-/**
- * Switches rail section.
- *
- * `popUpTo(HOME)` plus `launchSingleTop` keeps the back stack at most two deep for sections, so BACK
- * from any section goes to Home and BACK from Home exits — rather than replaying the user's whole
- * navigation history in reverse.
- */
 private fun NavHostController.navigateToSection(route: String) {
     navigate(route) {
         popUpTo(Routes.HOME) { saveState = true }
