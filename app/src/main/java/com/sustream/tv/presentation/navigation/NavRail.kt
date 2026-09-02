@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Extension
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,29 +44,15 @@ import com.sustream.tv.designsystem.component.StatusDot
 import com.sustream.tv.designsystem.icon.SuStreamIcons
 import com.sustream.tv.designsystem.theme.Dimens
 import com.sustream.tv.designsystem.theme.SuStreamTheme
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
 
-/**
- * Left navigation rail: the TV replacement for the prototype's bottom tab bar.
- *
- * The prototype's four-tab bottom bar cannot work with a remote — a bottom bar means the D-pad has
- * to traverse the whole page to reach navigation, then traverse back. A left rail is one press away
- * from anywhere in the content, which is why every Android TV app uses one.
- *
- * It collapses to icons and expands on focus, matching the prototype's sidebar treatment while
- * giving the content the full width when navigation is not in use. `animateContentSize` on the rail
- * rather than the items means the content shifts once, smoothly, instead of each label popping in.
- */
 @Composable
 fun NavRail(
     currentRoute: String?,
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier,
-    /** Number of playlists that are configured and working; shown as a status line. */
     activePlaylistCount: Int = 0,
-    providerConnected: Boolean = false,
+    /** Number of addons that are configured and healthy. */
+    activeAddonCount: Int = 0,
     unreadNotifications: Int = 0,
 ) {
     val colours = SuStreamTheme.colours
@@ -75,8 +65,6 @@ fun NavRail(
             .animateContentSize(animationSpec = tween(Dimens.FOCUS_ANIMATION_MILLIS))
             .background(colours.surfaceNav)
             .focusGroup()
-            // One listener for the whole rail: expanding per item would make the rail jitter as
-            // focus moved between items.
             .onFocusChanged { expanded = it.hasFocus }
             .padding(
                 horizontal = Dimens.space2,
@@ -103,7 +91,7 @@ fun NavRail(
         if (expanded) {
             RailStatus(
                 activePlaylistCount = activePlaylistCount,
-                providerConnected = providerConnected,
+                activeAddonCount = activeAddonCount,
             )
         }
     }
@@ -195,7 +183,6 @@ private fun RailItem(
         ) {
             Icon(
                 imageVector = item.icon,
-                // Collapsed, the icon is the only label there is, so it must carry the description.
                 contentDescription = if (expanded) null else label,
                 modifier = Modifier.size(Dimens.navRailIconSize),
             )
@@ -215,17 +202,10 @@ private fun RailItem(
     }
 }
 
-/**
- * Status footer, echoing the prototype's header strip ("Debrid Resolver: Connected", "IPTV: 2
- * Playlists Active").
- *
- * Only reports what is actually true of this device. The prototype's version also claimed uptime
- * percentages and cache-hit rates, which the client cannot measure.
- */
 @Composable
 private fun RailStatus(
     activePlaylistCount: Int,
-    providerConnected: Boolean,
+    activeAddonCount: Int,
 ) {
     val colours = SuStreamTheme.colours
 
@@ -233,19 +213,22 @@ private fun RailStatus(
         verticalArrangement = Arrangement.spacedBy(Dimens.space2),
         modifier = Modifier.padding(horizontal = Dimens.space3, vertical = Dimens.space2),
     ) {
+        // Addon health line
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimens.space2),
         ) {
-            StatusDot(
-                colour = if (providerConnected) colours.healthy else colours.textDisabled,
-                pulsing = providerConnected,
+            Icon(
+                imageVector = Icons.Filled.Extension,
+                contentDescription = null,
+                tint = if (activeAddonCount > 0) colours.healthy else colours.textDisabled,
+                modifier = Modifier.size(STATUS_ICON_SIZE),
             )
             Text(
-                text = if (providerConnected) {
-                    stringResource(R.string.settings_provider_connected)
+                text = if (activeAddonCount > 0) {
+                    "$activeAddonCount addon${if (activeAddonCount == 1) "" else "s"} active"
                 } else {
-                    stringResource(R.string.settings_provider_not_connected)
+                    stringResource(R.string.addons_none_configured)
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = colours.textTertiary,
@@ -253,6 +236,7 @@ private fun RailStatus(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        // IPTV line (unchanged)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(Dimens.space2),
@@ -265,7 +249,7 @@ private fun RailStatus(
             )
             Text(
                 text = if (activePlaylistCount > 0) {
-                    activePlaylistCount.toString() + " active"
+                    "$activePlaylistCount active"
                 } else {
                     stringResource(R.string.iptv_no_playlists_title)
                 },
@@ -285,15 +269,16 @@ private data class RailDestination(
 )
 
 private val RAIL_ITEMS = listOf(
-    RailDestination(Routes.HOME, R.string.nav_home, SuStreamIcons.Zap),
-    RailDestination(Routes.FILMS, R.string.nav_films, SuStreamIcons.Film),
-    RailDestination(Routes.TV, R.string.nav_tv, SuStreamIcons.Tv),
-    RailDestination(Routes.LIVE, R.string.nav_live, SuStreamIcons.Radio),
-    RailDestination(Routes.SEARCH, R.string.nav_search, Icons.Filled.Search),
+    RailDestination(Routes.HOME,    R.string.nav_home,    SuStreamIcons.Zap),
+    RailDestination(Routes.FILMS,   R.string.nav_films,   SuStreamIcons.Film),
+    RailDestination(Routes.TV,      R.string.nav_tv,      SuStreamIcons.Tv),
+    RailDestination(Routes.LIVE,    R.string.nav_live,    SuStreamIcons.Radio),
+    RailDestination(Routes.ADDONS,  R.string.nav_addons,  Icons.Filled.Extension),
+    RailDestination(Routes.SEARCH,  R.string.nav_search,  Icons.Filled.Search),
     RailDestination(Routes.LIBRARY, R.string.nav_library, SuStreamIcons.Bookmark),
-    RailDestination(Routes.SETTINGS, R.string.nav_settings, Icons.Filled.Settings),
+    RailDestination(Routes.SETTINGS,R.string.nav_settings,Icons.Filled.Settings),
 )
 
 private val BRAND_ICON_SIZE = 22.dp
 private val STATUS_ICON_SIZE = 14.dp
-private val UNREAD_DOT_SIZE = 8.dp
+private val UNREAD_DOT_SIZE  = 8.dp

@@ -25,7 +25,6 @@ import com.sustream.tv.domain.model.PlaybackProgress
 import com.sustream.tv.domain.model.Playlist
 import com.sustream.tv.domain.model.PlaylistOrigin
 import com.sustream.tv.domain.model.PlaylistStatus
-import com.sustream.tv.domain.model.ProviderId
 import com.sustream.tv.domain.model.ServiceSubject
 import com.sustream.tv.domain.model.SyncState
 import com.sustream.tv.domain.model.WatchlistEntry
@@ -299,14 +298,26 @@ fun EpgProgramme.toEntity(playlistId: String): EpgProgrammeEntity = EpgProgramme
 
 // ---- Notifications ------------------------------------------------------------
 
+/**
+ * Maps a [NotificationEntity] row to its domain type.
+ *
+ * ProviderSubject / SUBJECT_PROVIDER_PREFIX removed — TorBox integration is gone.
+ * Rows with kind=SERVICE and a subject that starts with "provider:" will return null
+ * (unreadable row, costs that row only) until old rows age out of the table.
+ */
 fun NotificationEntity.toDomain(): AppNotification? = when (kind) {
     NOTIFICATION_KIND_SERVICE -> {
         val subjectIdentifier = subjectId ?: return null
-        val subject = if (subjectIdentifier.startsWith(SUBJECT_PROVIDER_PREFIX)) {
-            val providerName = subjectIdentifier.removePrefix(SUBJECT_PROVIDER_PREFIX)
-            val provider = ProviderId.entries.firstOrNull { it.name == providerName }
-                ?: return null
-            ServiceSubject.ProviderSubject(provider)
+
+        // Legacy provider-prefixed rows from before the TorBox removal: treat as unreadable.
+        if (subjectIdentifier.startsWith(LEGACY_SUBJECT_PROVIDER_PREFIX)) return null
+
+        val subject = if (subjectIdentifier.startsWith(SUBJECT_ADDON_PREFIX)) {
+            val addonId = subjectIdentifier.removePrefix(SUBJECT_ADDON_PREFIX)
+            ServiceSubject.AddonSubject(
+                addonId = addonId,
+                addonName = subjectName ?: addonId,
+            )
         } else {
             ServiceSubject.PlaylistSubject(
                 playlistId = subjectIdentifier,
@@ -337,12 +348,14 @@ fun NotificationEntity.toDomain(): AppNotification? = when (kind) {
     else -> null
 }
 
-const val NOTIFICATION_KIND_SERVICE = "SERVICE_ALERT"
-const val NOTIFICATION_KIND_CONTENT = "CONTENT_AVAILABLE"
-const val SUBJECT_PROVIDER_PREFIX = "provider:"
+const val NOTIFICATION_KIND_SERVICE  = "SERVICE_ALERT"
+const val NOTIFICATION_KIND_CONTENT  = "CONTENT_AVAILABLE"
+const val SUBJECT_ADDON_PREFIX       = "addon:"
+/** Retained only to silently drop legacy TorBox rows — do not write new rows with this prefix. */
+const val LEGACY_SUBJECT_PROVIDER_PREFIX = "provider:"
 
 /** Which Android notification channel a domain notification belongs to. */
 fun AppNotification.channelId(): NotificationChannelId = when (this) {
-    is AppNotification.ServiceAlert -> NotificationChannelId.SERVICE_ALERTS
+    is AppNotification.ServiceAlert   -> NotificationChannelId.SERVICE_ALERTS
     is AppNotification.ContentAvailable -> NotificationChannelId.NEW_CONTENT
 }

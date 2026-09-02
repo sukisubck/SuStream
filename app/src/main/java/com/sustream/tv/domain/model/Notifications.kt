@@ -8,7 +8,7 @@ import java.time.Instant
  * The workbook asks for playback/service alerts (row 47) and new-content alerts (row 48). Both are
  * modelled as things the app can genuinely determine for itself:
  *
- *  - a service alert comes from a playlist or provider call that actually failed;
+ *  - a service alert comes from a playlist or addon call that actually failed;
  *  - a new-content alert comes from a watchlist title that actually became available.
  *
  * There is no push transport. Fire TV has no Google Play Services, so FCM is unavailable, and
@@ -22,7 +22,7 @@ sealed interface AppNotification {
     val createdAt: Instant
     val isRead: Boolean
 
-    /** A configured playlist or provider stopped working. */
+    /** A configured playlist or addon stopped working. */
     data class ServiceAlert(
         override val id: String,
         override val createdAt: Instant,
@@ -42,15 +42,28 @@ sealed interface AppNotification {
     ) : AppNotification
 }
 
+/**
+ * What generated a [AppNotification.ServiceAlert].
+ *
+ * TorBox / ProviderSubject removed — the app no longer has a cloud-provider integration.
+ * Alerts now come only from playlists and addons.
+ */
 sealed interface ServiceSubject {
-    data class PlaylistSubject(val playlistId: String, val playlistName: String) : ServiceSubject
-    data class ProviderSubject(val provider: ProviderId) : ServiceSubject
-
     val displayName: String
-        get() = when (this) {
-            is PlaylistSubject -> playlistName
-            is ProviderSubject -> provider.displayName
-        }
+
+    data class PlaylistSubject(
+        val playlistId: String,
+        val playlistName: String,
+    ) : ServiceSubject {
+        override val displayName: String get() = playlistName
+    }
+
+    data class AddonSubject(
+        val addonId: String,
+        val addonName: String,
+    ) : ServiceSubject {
+        override val displayName: String get() = addonName
+    }
 }
 
 /** Android notification channels, for the system tray on devices that show one. */
