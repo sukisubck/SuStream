@@ -33,6 +33,9 @@ import com.sustream.tv.presentation.navigation.SuStreamNavGraph
  * the navigation graph, and own the top-level BACK policy — which on a television is a real decision
  * rather than a default, because there is no on-screen "up" affordance and BACK is the only way out
  * of anything.
+ *
+ * Player lifecycle note: ExoPlayer is owned by PlayerViewModel and released in onCleared(), which
+ * fires when the ViewModel is destroyed. No explicit release is needed here.
  */
 class MainActivity : ComponentActivity() {
 
@@ -47,15 +50,6 @@ class MainActivity : ComponentActivity() {
                     SuStreamApp(container = container, onExitApp = { finish() })
                 }
             }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Release the player's surface and buffers. The container itself outlives the activity, and
-        // its lazy dependencies are rebuilt on demand if the activity returns.
-        if (isFinishing) {
-            (application as SuStreamApplication).container.playerManager.release()
         }
     }
 }
