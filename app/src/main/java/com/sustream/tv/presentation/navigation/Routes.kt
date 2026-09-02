@@ -61,7 +61,7 @@ object Routes {
 
     // ---- Addons sub-screens -------------------------------------------------
     const val ADDONS_ADD    = "addons/add"
-    const val ADDONS_DETAIL = "addons/detail/{addonId}"
+    const val ADDONS_DETAIL = "addons/detail/{$ARG_ADDON_ID}"
     const val ARG_ADDON_ID  = "addonId"
 
     fun addonDetail(addonId: String): String = "addons/detail/" + encode(addonId)

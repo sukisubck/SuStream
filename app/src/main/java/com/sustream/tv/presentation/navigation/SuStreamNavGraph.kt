@@ -90,7 +90,7 @@ fun SuStreamNavGraph(
                             )
                         },
                         onAddPlaylist = { navController.navigateToSection(Routes.LIVE) },
-                        // Was onOpenProviderSettings — now navigates to the Addons rail destination.
+                        // Provider settings → now goes to the Addons rail destination.
                         onOpenProviderSettings = {
                             navController.navigateToSection(Routes.ADDONS)
                         },
