@@ -43,9 +43,10 @@
     <string name="action_sign_out">Sign out</string>
     <string name="action_continue_as_guest">Continue as guest</string>
     <string name="exit_confirm">Press back again to leave SuStream</string>
+    <string name="clearCache">Clear cache</string>
 
     <!-- ===================== Shared states ===================== -->
-    <string name="state_loading">Loading…</string>
+    <string name="state_loading">Loading&#8230;</string>
     <string name="state_empty_title">Nothing here yet</string>
     <string name="state_error_title">Something went wrong</string>
     <string name="state_offline_title">No internet connection</string>
@@ -63,6 +64,12 @@
     <string name="error_quota">Your provider account has reached its quota.</string>
     <string name="error_unsupported_format">This stream format is not supported on this device.</string>
     <string name="error_unknown">An unexpected error occurred.</string>
+
+    <!-- ===================== Notification channels ===================== -->
+    <string name="notif_channel_service_name">Background service</string>
+    <string name="notif_channel_service_description">Keeps playlist and EPG data fresh in the background</string>
+    <string name="notif_channel_content_name">Content updates</string>
+    <string name="notif_channel_content_description">New episodes, availability changes, and recommendations</string>
 
     <!-- ===================== Home ===================== -->
     <string name="home_featured_badge">Featured</string>
@@ -103,7 +110,7 @@
     <string name="details_certification">Rated %1$s</string>
 
     <!-- ===================== Source availability ===================== -->
-    <string name="availability_checking">Checking your authorised sources…</string>
+    <string name="availability_checking">Checking your authorised sources&#8230;</string>
     <string name="availability_available">Available to play</string>
     <string name="availability_available_count">%1$d source available</string>
     <string name="availability_available_count_plural">%1$d sources available</string>
@@ -118,7 +125,7 @@
     <string name="sources_authorised_by_playlist">From your playlist "%1$s"</string>
     <string name="sources_authorised_by_provider">From your %1$s library</string>
     <string name="sources_authorised_by_addon">From the addon you configured, "%1$s"</string>
-    <string name="sources_validating">Preparing the stream…</string>
+    <string name="sources_validating">Preparing the stream&#8230;</string>
 
     <!-- ===================== Live TV / IPTV ===================== -->
     <string name="iptv_title">Live TV</string>
@@ -144,7 +151,7 @@
     <string name="iptv_field_server">Server URL</string>
     <string name="iptv_field_username">Username</string>
     <string name="iptv_field_password">Password</string>
-    <string name="iptv_field_pick_file">Choose file…</string>
+    <string name="iptv_field_pick_file">Choose file&#8230;</string>
     <string name="iptv_xtream_note">Enter the server address, username and password given to you by your provider. Credentials are encrypted on this device and are never uploaded or written to logs.</string>
     <string name="iptv_cleartext_warning">This address is not encrypted (http). Your provider credentials and viewing would travel in the clear over your network.</string>
     <string name="iptv_cleartext_acknowledge">I understand, add it anyway</string>
@@ -164,6 +171,20 @@
 
     <!-- ===================== Addons ===================== -->
     <string name="addons_none_configured">No addons</string>
+    <string name="addons_subtitle">HTML/JSON addons you have authorised</string>
+    <string name="addons_add">Add addon</string>
+    <string name="addons_add_subtitle">Paste a manifest URL to verify it before saving</string>
+    <string name="addons_empty_body">Addons let you connect HTML/JSON-based catalogue sources you already hold a licence for. Press Add addon to get started.</string>
+    <string name="addons_remove_confirm_title">Remove "%1$s"?</string>
+    <string name="addons_remove_confirm_body">The addon configuration will be removed from this device. Sources it provided will no longer appear.</string>
+    <string name="addons_field_url">Manifest URL</string>
+    <string name="addons_field_name">Display name</string>
+    <string name="addons_action_test">Test</string>
+    <string name="addons_probing">Checking the manifest&#8230;</string>
+    <string name="addons_probe_ok">&#10003; %1$s &#8212; supports: %2$s</string>
+    <string name="addons_supported_types">Supports: %1$s</string>
+    <string name="addons_authorised_label">I hold a valid licence or subscription for this service</string>
+    <string name="addons_authorised_note">SuStream does not supply or verify content licences. You are responsible for ensuring you have the right to use any addon you configure.</string>
 
     <!-- ===================== Search ===================== -->
     <string name="search_hint">Search films, TV shows and channels</string>
@@ -182,7 +203,7 @@
     <string name="library_tab_watchlist">Watchlist</string>
     <string name="library_tab_continue">Continue watching</string>
     <string name="library_tab_history">History</string>
-    <string name="library_watchlist_empty">Titles you save appear here. Open anything and choose “Add to watchlist”.</string>
+    <string name="library_watchlist_empty">Titles you save appear here. Open anything and choose &#8220;Add to watchlist&#8221;.</string>
     <string name="library_continue_empty">Anything you part-watch shows up here so you can pick it back up.</string>
     <string name="library_history_empty">Your viewing history is empty.</string>
     <string name="library_progress_remaining">%1$s left</string>
@@ -190,7 +211,7 @@
 
     <!-- ===================== Player ===================== -->
     <string name="player_live_badge">LIVE</string>
-    <string name="player_buffering">Buffering…</string>
+    <string name="player_buffering">Buffering&#8230;</string>
     <string name="player_audio_track">Audio</string>
     <string name="player_subtitles">Subtitles</string>
     <string name="player_subtitles_off">Off</string>

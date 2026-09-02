@@ -1,7 +1,7 @@
 package com.sustream.tv.presentation.addons
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -10,210 +10,258 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Extension
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.tv.material3.Button
-import androidx.tv.material3.Icon
-import androidx.tv.material3.MaterialTheme
-import androidx.tv.material3.Surface
-import androidx.tv.material3.Text
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.sustream.tv.R
-import com.sustream.tv.core.di.LocalAppContainer
+import com.sustream.tv.core.di.suStreamViewModel
+import com.sustream.tv.designsystem.component.ConfirmDialog
+import com.sustream.tv.designsystem.component.EmptyState
+import com.sustream.tv.designsystem.component.InlineError
+import com.sustream.tv.designsystem.component.PrimaryButton
+import com.sustream.tv.designsystem.component.SecondaryButton
+import com.sustream.tv.designsystem.component.SectionHeader
+import com.sustream.tv.designsystem.component.TvActionRow
+import com.sustream.tv.designsystem.component.TvCheckbox
+import com.sustream.tv.designsystem.component.TvDialog
+import com.sustream.tv.designsystem.component.TvTextField
+import com.sustream.tv.designsystem.theme.Dimens
+import com.sustream.tv.designsystem.theme.SuStreamTheme
 import com.sustream.tv.domain.model.AddonConfiguration
-import com.sustream.tv.domain.model.AddonHealthState
 import com.sustream.tv.presentation.common.Loadable
 
+/**
+ * Top-level Addons destination — lists configured HTML/JSON addons and
+ * exposes the add-addon flow (URL probe → authorisation → save).
+ *
+ * Nav callbacks [onAddAddon] and [onOpenAddon] are kept for future
+ * deep-link use; the add flow is presented as an inline sheet rather
+ * than a separate route, matching the Live TV playlist pattern.
+ */
 @Composable
 fun AddonsScreen(
     onAddAddon: () -> Unit,
     onOpenAddon: (addonId: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val container = LocalAppContainer.current
-    val vm: AddonsViewModel = viewModel(factory = container.viewModelFactory())
-    val state by vm.state.collectAsState()
+    val viewModel: AddonsViewModel = suStreamViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    var addonIdToRemove by rememberSaveable { mutableStateOf<String?>(null) }
 
     Column(
+        verticalArrangement = Arrangement.spacedBy(Dimens.space4),
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 48.dp, vertical = 27.dp),
+            .background(SuStreamTheme.colours.background)
+            .padding(horizontal = Dimens.overscanHorizontal, vertical = Dimens.overscanVertical),
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Text(
-                text = stringResource(R.string.nav_addons),
-                style = MaterialTheme.typography.headlineMedium,
-            )
-            Button(onClick = { vm.openAddSheet() }) {
-                Icon(Icons.Filled.Add, contentDescription = null)
-                Text(
-                    text = stringResource(R.string.addons_add_button),
-                    modifier = Modifier.padding(start = 8.dp),
+        SectionHeader(
+            title = stringResource(R.string.nav_addons),
+            subtitle = stringResource(R.string.addons_subtitle),
+            trailing = {
+                PrimaryButton(
+                    text = stringResource(R.string.addons_add),
+                    onClick = viewModel::openAddSheet,
                 )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
+            },
+        )
 
         if (state.addons.isEmpty()) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Extension,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                    )
-                    Text(
-                        text = stringResource(R.string.addons_empty_title),
-                        style = MaterialTheme.typography.titleLarge,
-                    )
-                    Text(
-                        text = stringResource(R.string.addons_empty_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
+            EmptyState(
+                title = stringResource(R.string.addons_none_configured),
+                body = stringResource(R.string.addons_empty_body),
+                actionLabel = stringResource(R.string.addons_add),
+                onAction = viewModel::openAddSheet,
+            )
         } else {
             LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(Dimens.space3),
+                contentPadding = PaddingValues(bottom = Dimens.overscanVertical),
+                modifier = Modifier.fillMaxSize(),
             ) {
                 items(state.addons, key = { it.id }) { addon ->
                     AddonRow(
                         addon = addon,
-                        onClick = { onOpenAddon(addon.id) },
-                        onRemove = { vm.remove(addon.id) },
+                        onRemove = { addonIdToRemove = addon.id },
                     )
                 }
             }
         }
     }
 
-    if (state.addSheet != null) {
-        AddAddonSheet(
-            state = state.addSheet!!,
-            onUrlChanged = vm::onUrlChanged,
-            onNameChanged = vm::onNameChanged,
-            onAuthorisedChanged = vm::onAuthorisedChanged,
-            onTest = vm::test,
-            onSave = vm::save,
-            onDismiss = vm::closeAddSheet,
+    // ---- Add-addon sheet ----------------------------------------------------
+
+    state.addSheet?.let { sheet ->
+        AddAddonDialog(
+            sheet = sheet,
+            onDismiss = viewModel::closeAddSheet,
+            onUrlChanged = viewModel::onUrlChanged,
+            onNameChanged = viewModel::onNameChanged,
+            onAuthorisedChanged = viewModel::onAuthorisedChanged,
+            onTest = viewModel::test,
+            onSave = viewModel::save,
+        )
+    }
+
+    // ---- Remove confirmation -------------------------------------------------
+
+    state.addons.firstOrNull { it.id == addonIdToRemove }?.let { addon ->
+        ConfirmDialog(
+            title = stringResource(R.string.addons_remove_confirm_title, addon.name),
+            body = stringResource(R.string.addons_remove_confirm_body),
+            confirmLabel = stringResource(R.string.action_delete),
+            onConfirm = {
+                viewModel.remove(addon.id)
+                addonIdToRemove = null
+            },
+            onDismiss = { addonIdToRemove = null },
         )
     }
 }
 
+// ---------------------------------------------------------------------------
+
 @Composable
 private fun AddonRow(
     addon: AddonConfiguration,
-    onClick: () -> Unit,
     onRemove: () -> Unit,
-    modifier: Modifier = Modifier,
 ) {
-    Surface(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = addon.displayName,
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Text(
-                    text = addon.normalisedBaseUrl,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                val healthLabel = when (addon.lastHealthState) {
-                    AddonHealthState.OK -> "Active"
-                    AddonHealthState.FAILING -> "Error"
-                    AddonHealthState.DISABLED -> "Disabled"
-                    else -> if (addon.authorisedByUser) "Configured" else "Inactive"
-                }
-                Text(
-                    text = healthLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                )
-                Button(onClick = onRemove) {
-                    Icon(Icons.Filled.Delete, contentDescription = stringResource(R.string.addons_remove))
-                }
-            }
+    Column(verticalArrangement = Arrangement.spacedBy(Dimens.space2)) {
+        TvActionRow(
+            title = addon.name,
+            subtitle = addon.manifestUrl,
+            onClick = {},
+        )
+        if (addon.supportedTypes.isNotEmpty()) {
+            androidx.tv.material3.Text(
+                text = stringResource(
+                    R.string.addons_supported_types,
+                    addon.supportedTypes.joinToString(" · ") { it.name.lowercase() },
+                ),
+                style = androidx.tv.material3.MaterialTheme.typography.bodySmall,
+                color = SuStreamTheme.colours.textTertiary,
+            )
         }
+        SecondaryButton(
+            text = stringResource(R.string.action_delete),
+            onClick = onRemove,
+            destructive = true,
+        )
     }
 }
 
+// ---------------------------------------------------------------------------
+
 @Composable
-private fun AddAddonSheet(
-    state: AddSheetState,
+private fun AddAddonDialog(
+    sheet: AddSheetState,
+    onDismiss: () -> Unit,
     onUrlChanged: (String) -> Unit,
     onNameChanged: (String) -> Unit,
     onAuthorisedChanged: (Boolean) -> Unit,
     onTest: () -> Unit,
     onSave: () -> Unit,
-    onDismiss: () -> Unit,
 ) {
-    // Full add-sheet implementation belongs in a follow-up. For now this is a placeholder
-    // that renders the two-gate flow (test then save) so the screen is functional.
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+    TvDialog(
+        title = stringResource(R.string.addons_add),
+        subtitle = stringResource(R.string.addons_add_subtitle),
+        onDismiss = onDismiss,
     ) {
-        Surface(modifier = Modifier.padding(48.dp)) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.addons_add_title),
-                    style = MaterialTheme.typography.titleLarge,
+        TvTextField(
+            value = sheet.urlInput,
+            onValueChange = onUrlChanged,
+            label = stringResource(R.string.addons_field_url),
+            enabled = !sheet.isSaving,
+        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.space3),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            SecondaryButton(
+                text = stringResource(R.string.addons_action_test),
+                enabled = sheet.canTest,
+                onClick = onTest,
+            )
+            if (sheet.isVerified) {
+                TvTextField(
+                    value = sheet.nameInput,
+                    onValueChange = onNameChanged,
+                    label = stringResource(R.string.addons_field_name),
+                    enabled = !sheet.isSaving,
+                    modifier = Modifier.weight(1f),
                 )
-                // TODO: replace with real TextField, Checkbox, and error display
-                Text("URL: ${state.urlInput}")
-                Text("Name: ${state.nameInput}")
-                when (val p = state.probe) {
-                    is Loadable.Loading -> Text("Checking…")
-                    is Loadable.Loaded  -> Text("✓ ${p.value.addonName} (${p.value.types.joinToString()})")
-                    is Loadable.Failed  -> Text("✗ ${p.error.detail}")
-                    else -> Unit
-                }
-                state.saveError?.let { Text("Error: ${it.detail}") }
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Button(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
-                    Button(onClick = onTest, enabled = state.canTest) { Text(stringResource(R.string.addons_test_button)) }
-                    Button(onClick = onSave, enabled = state.canSave) { Text(stringResource(R.string.action_save)) }
-                }
             }
+        }
+
+        // Probe result feedback
+        when (val probe = sheet.probe) {
+            is Loadable.Loading -> androidx.tv.material3.Text(
+                text = stringResource(R.string.addons_probing),
+                style = androidx.tv.material3.MaterialTheme.typography.bodySmall,
+                color = SuStreamTheme.colours.textMuted,
+            )
+            is Loadable.Loaded -> {
+                val descriptor = probe.value
+                androidx.tv.material3.Text(
+                    text = stringResource(
+                        R.string.addons_probe_ok,
+                        descriptor.addonName,
+                        descriptor.supportedTypes.joinToString(", ") { it.name.lowercase() },
+                    ),
+                    style = androidx.tv.material3.MaterialTheme.typography.bodySmall,
+                    color = SuStreamTheme.colours.healthy,
+                )
+            }
+            is Loadable.Failed -> InlineError(
+                error = probe.error,
+                onRetry = onTest,
+            )
+            else -> Unit
+        }
+
+        if (sheet.isVerified) {
+            Spacer(Modifier.height(Dimens.space2))
+
+            TvCheckbox(
+                checked = sheet.authorisedConfirmed,
+                onCheckedChange = onAuthorisedChanged,
+                label = stringResource(R.string.addons_authorised_label),
+                enabled = !sheet.isSaving,
+            )
+
+            androidx.tv.material3.Text(
+                text = stringResource(R.string.addons_authorised_note),
+                style = androidx.tv.material3.MaterialTheme.typography.bodySmall,
+                color = SuStreamTheme.colours.textMuted,
+            )
+        }
+
+        sheet.saveError?.let { error ->
+            InlineError(error = error, onRetry = null)
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Dimens.space3),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            PrimaryButton(
+                text = stringResource(R.string.action_save),
+                enabled = sheet.canSave,
+                onClick = onSave,
+            )
+            SecondaryButton(
+                text = stringResource(R.string.action_cancel),
+                onClick = onDismiss,
+            )
         }
     }
 }
