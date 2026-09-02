@@ -15,21 +15,23 @@ import com.sustream.tv.domain.model.MediaType
 object Routes {
 
     // ---- Top-level sections (the nav rail) ----------------------------------
-    const val HOME = "home"
-    const val FILMS = "films"
-    const val TV = "tv"
-    const val LIVE = "live"
-    const val SEARCH = "search"
-    const val LIBRARY = "library"
+    const val HOME     = "home"
+    const val FILMS    = "films"
+    const val TV       = "tv"
+    const val LIVE     = "live"
+    /** Addon list — top-level rail destination, between Live TV and Search. */
+    const val ADDONS   = "addons"
+    const val SEARCH   = "search"
+    const val LIBRARY  = "library"
     const val SETTINGS = "settings"
 
     /** Sections reachable from the rail, in rail order. */
-    val SECTIONS = listOf(HOME, FILMS, TV, LIVE, SEARCH, LIBRARY, SETTINGS)
+    val SECTIONS = listOf(HOME, FILMS, TV, LIVE, ADDONS, SEARCH, LIBRARY, SETTINGS)
 
     // ---- Startup ------------------------------------------------------------
-    const val SPLASH = "splash"
+    const val SPLASH     = "splash"
     const val ONBOARDING = "onboarding"
-    const val AUTH = "auth"
+    const val AUTH       = "auth"
 
     // ---- Details ------------------------------------------------------------
     private const val DETAILS_BASE = "details"
@@ -41,13 +43,13 @@ object Routes {
     // ---- Player -------------------------------------------------------------
     private const val PLAYER_BASE = "player"
     const val ARG_PLAYBACK_KIND = "kind"
-    const val ARG_TARGET_ID = "targetId"
-    const val ARG_SEASON = "season"
-    const val ARG_EPISODE = "episode"
+    const val ARG_TARGET_ID     = "targetId"
+    const val ARG_SEASON        = "season"
+    const val ARG_EPISODE       = "episode"
     const val PLAYER =
         "$PLAYER_BASE/{$ARG_PLAYBACK_KIND}/{$ARG_TARGET_ID}?$ARG_SEASON={$ARG_SEASON}&$ARG_EPISODE={$ARG_EPISODE}"
 
-    const val KIND_MOVIE = "movie"
+    const val KIND_MOVIE   = "movie"
     const val KIND_EPISODE = "episode"
     const val KIND_CHANNEL = "channel"
 
@@ -66,16 +68,23 @@ object Routes {
     // ---- Catalogue browse ---------------------------------------------------
     fun catalogue(type: MediaType): String = if (type == MediaType.MOVIE) FILMS else TV
 
-    // ---- Settings sub-screens ----------------------------------------------
-    const val SETTINGS_ACCOUNT = "settings/account"
-    const val SETTINGS_PLAYBACK = "settings/playback"
-    const val SETTINGS_SUBTITLES = "settings/subtitles"
-    const val SETTINGS_PROVIDERS = "settings/providers"
-    const val SETTINGS_IPTV = "settings/iptv"
-    const val SETTINGS_DIAGNOSTICS = "settings/diagnostics"
-    const val SETTINGS_ABOUT = "settings/about"
+    // ---- Addons sub-screens -------------------------------------------------
+    const val ADDONS_ADD    = "addons/add"
+    const val ADDONS_DETAIL = "addons/detail/{addonId}"
+    const val ARG_ADDON_ID  = "addonId"
 
-    // ---- Live TV sub-screens -----------------------------------------------
+    fun addonDetail(addonId: String): String = "addons/detail/" + encode(addonId)
+
+    // ---- Settings sub-screens -----------------------------------------------
+    // SETTINGS_PROVIDERS removed — no Providers screen in the updated plan.
+    const val SETTINGS_ACCOUNT     = "settings/account"
+    const val SETTINGS_PLAYBACK    = "settings/playback"
+    const val SETTINGS_SUBTITLES   = "settings/subtitles"
+    const val SETTINGS_IPTV        = "settings/iptv"
+    const val SETTINGS_DIAGNOSTICS = "settings/diagnostics"
+    const val SETTINGS_ABOUT       = "settings/about"
+
+    // ---- Live TV sub-screens ------------------------------------------------
     private const val PLAYLIST_BASE = "live/playlist"
     const val ARG_PLAYLIST_ID = "playlistId"
     const val PLAYLIST_DETAIL = "$PLAYLIST_BASE/{$ARG_PLAYLIST_ID}"
